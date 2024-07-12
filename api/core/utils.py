@@ -4,17 +4,22 @@ import requests
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User, AccessTokenZoho
+from django.shortcuts import redirect
 
-redirect_uri = "http://localhost:8000/authorize/"
+
+
+redirect_uri = "http://localhost:8000/api/authorize/"
 client_id = os.environ.get('ZOHO_CLIENT_ID')
 client_secret = os.environ.get('ZOHO_CLIENT_SECRET')
 url_zoho = os.environ.get('ZOHO_URL')
-# scope = "Desk.settings.READ,Desk.basic.READ"
+scope = "Desk.tickets.ALL,Desk.tickets.READ,Desk.tickets.WRITE,Desk.tickets.UPDATE,Desk.tickets.CREATE,Desk.tickets.DELETE,Desk.contacts.READ,Desk.contacts.WRITE,Desk.contacts.UPDATE,Desk.contacts.CREATE,Desk.tasks.ALL,Desk.tasks.WRITE,Desk.tasks.READ,Desk.tasks.CREATE,Desk.tasks.UPDATE,Desk.tasks.DELETE,Desk.basic.READ,Desk.basic.CREATE,Desk.settings.ALL,Desk.settings.WRITE,Desk.settings.READ,Desk.settings.CREATE,Desk.settings.UPDATE,Desk.settings.DELETE,Desk.search.READ,Desk.events.ALL,Desk.events.READ,Desk.events.WRITE,Desk.events.CREATE,Desk.events.UPDATE,Desk.events.DELETE,Desk.articles.READ,Desk.articles.CREATE,Desk.articles.UPDATE,Desk.articles.DELETE"
+
 grant_type = "authorization_code"
+access_type = "online"
 
 
-def get_clean_authorization_url(scope):
-    authorization_url = f"{url_zoho}/oauth/v2/auth?response_type=code&client_id={client_id}&scope={scope}&redirect_uri={redirect_uri}&state=5466400890088961855"
+def get_clean_authorization_url():
+    authorization_url = f"{url_zoho}/oauth/v2/auth?response_type=code&client_id={client_id}&scope={scope}&access_type={access_type}&redirect_uri={redirect_uri}&state=5466400890088961855"
     
     return authorization_url
 
@@ -27,7 +32,7 @@ def generating_tokens(request):
     # print(grant_token)
     try:
         response = requests.post(
-            "{url_zoho}/oauth/v2/token",
+            f"{url_zoho}/oauth/v2/token",
             data={
                 "code": grant_token,
                 "grant_type": grant_type,
@@ -42,6 +47,7 @@ def generating_tokens(request):
             try:
                 zoho, created = AccessTokenZoho.objects.get_or_create(user=user)
                 zoho.access_token = data['access_token']
+                zoho.scope = data['scope']
                 zoho.save()
             except User.DoesNotExist:
                 return ValueError(f'User {request.user} does not exist')
@@ -51,3 +57,5 @@ def generating_tokens(request):
             return Response(data, status=response.status_code)
     except requests.exceptions.RequestException as e:
         return Response(f"Error: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    

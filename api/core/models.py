@@ -18,8 +18,16 @@ class User(AbstractUser):
     
 class AccessTokenZoho(models.Model):
     user = models.OneToOneField(User, related_name="access_token", on_delete=models.CASCADE, blank=True)
-    access_token = models.CharField(_('access token'), max_length=255, blank=True, null=True)       
+    access_token = models.CharField(_('access token'), max_length=255, blank=True, null=True)   
+    scope = models.CharField(_('scope'), max_length=255, blank=True, null=True)    
     
     
     def __str__(self):
         return f"{self.user.username} + {self.access_token}"
+    
+    
+class Organization(models.Model):
+    pass
+
+    #NOQA
+     

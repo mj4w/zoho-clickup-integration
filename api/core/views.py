@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .utils import get_clean_authorization_url, generating_tokens
+from .utils import *
 from .models import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import requests
 from rest_framework import authentication, permissions
-from .organization_zoho.data import get_organization_data
+from .organization_zoho.data import *
 
 
 class SampleAPIView(APIView):
@@ -34,8 +34,7 @@ class ZohoAuthorizationView(APIView):
             return self.authorize_zoho(request)
 
     def authorize_zoho(self,request):
-        scope = request.GET.get('scope', 'Desk.settings.READ,Desk.basic.READ')
-        authorize_zoho_request = get_clean_authorization_url(scope)
+        authorize_zoho_request = get_clean_authorization_url()
         # print(authorize_zoho_request)
         return redirect(authorize_zoho_request)
 
@@ -75,3 +74,21 @@ class ZohoOrganization(APIView):
             
         response_data, status_code = get_organization_data(zoho_token)
         return Response(response_data, status_code)
+    
+    def patch(self, request, organization_id, format=None):
+        user = request.user
+        
+        try: 
+            zoho_token = AccessTokenZoho.objects.get(user=user).access_token
+        except AccessTokenZoho.DoesNotExist:
+            return Response({
+                "error": "Access token not found for the user."
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        data = request.data
+        print(data)
+        
+        response_data, status_code = patch_organization_data(zoho_token, organization_id, data)
+        if isinstance(response_data, Response):
+            return response_data
+        return Response(response_data, status=status_code)
