@@ -11,7 +11,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 import requests
 from rest_framework import authentication, permissions
 from .organization_zoho.data import *
+# import logging
 
+# logger = logging.getLogger(__name__)
 
 class SampleAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -66,14 +68,27 @@ class ZohoOrganization(APIView):
         
         try:
             zoho_token = AccessTokenZoho.objects.get(user=user).access_token
-            
+            # organization, created = Organization.objects.get_or_create(user=user)
+            # organization.organization_id = request.GET.get('id')
         except AccessTokenZoho.DoesNotExist:
-            return Response({
-                "error": "Access token not found for the user."
-            }, status.HTTP_400_BAD_REQUEST)
+            return {
+                "error": "Access token does not exist"
+            }, 500
             
         response_data, status_code = get_organization_data(zoho_token)
+        # logger.debug(f"Organization API Response: {response_data}")
+        organization_id = response_data['data'][0]['id']
+        # saving organization
+        try:
+            organization, created = Organization.objects.get_or_create(user=user)
+            organization.organization_id = organization_id
+            organization.save()
+        except Exception as e:
+            return {
+                "error": str(e),
+            }, 500
         return Response(response_data, status_code)
+
     
     def patch(self, request, organization_id, format=None):
         user = request.user
