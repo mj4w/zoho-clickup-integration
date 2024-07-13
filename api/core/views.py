@@ -10,7 +10,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import requests
 from rest_framework import authentication, permissions
-from .organization_zoho.data import *
+from .organization_zoho.views import *
+from .task_zoho.views import *
 # import logging
 
 # logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ class ZohoOrganization(APIView):
         organization_id = response_data['data'][0]['id']
         # saving organization
         try:
-            organization, created = Organization.objects.get_or_create(user=user)
+            organization, created = OrganizationZoho.objects.get_or_create(user=user)
             organization.organization_id = organization_id
             organization.save()
         except Exception as e:
@@ -107,3 +108,38 @@ class ZohoOrganization(APIView):
         if isinstance(response_data, Response):
             return response_data
         return Response(response_data, status=status_code)
+    
+
+class ZohoTask(APIView):
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            zoho_token = AccessTokenZoho.objects.get(user=user).access_token
+            organization_id = OrganizationZoho.objects.get(user=user).organization_id
+        except (AccessTokenZoho.DoesNotExist,OrganizationZoho.DoesNotExist):
+            return Response({"error": "Zoho token or Organization ID does not exist"}, status=500)
+        
+        response_data, status_code = list_task_data(zoho_token,organization_id)
+        return Response(response_data, status=status_code)
+        
+    
+    def post(self,request, *args, **kwargs):
+        # breakpoint()
+        user = request.user
+        try: 
+            zoho_token = AccessTokenZoho.objects.get(user=user).access_token
+            organization_id = OrganizationZoho.objects.get(user=user).organization_id
+            
+        except (AccessTokenZoho.DoesNotExist,OrganizationZoho.DoesNotExist):
+            return Response({"error": "Zoho token or Organization ID does not exist"}, status=500)
+            
+        data = request.data
+        response_data, status_code = create_task_data(zoho_token, organization_id, data)
+        if isinstance(response_data, Response):
+            return response_data
+        
+        return Response(response_data, status=status_code)
+        

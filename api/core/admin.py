@@ -3,4 +3,4 @@ from .models import *
 
 admin.site.register(User)
 admin.site.register(AccessTokenZoho)
-admin.site.register(Organization)
+admin.site.register(OrganizationZoho)

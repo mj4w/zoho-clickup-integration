@@ -26,9 +26,12 @@ class AccessTokenZoho(models.Model):
         return f"{self.user.username} + {self.access_token}"
     
     
-class Organization(models.Model):
+class OrganizationZoho(models.Model):
     user = models.OneToOneField(User, related_name="organization", on_delete=models.CASCADE, blank=True, null=True)
     organization_id = models.CharField(_('organization id'), max_length=255, blank=True, null=True)
 
     #NOQA
+    
+class TaskZoho(models.Model):
+    pass
      

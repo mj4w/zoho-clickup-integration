@@ -6,4 +6,5 @@ urlpatterns = [
     path('authorize/', views.ZohoAuthorizationView.as_view(), name='authorize'),
     path('organization/', views.ZohoOrganization.as_view(), name='zoho-organization'),
     path('organization/<int:organization_id>/', views.ZohoOrganization.as_view(), name='zoho-organization-detail'),
+    path('task/', views.ZohoTask.as_view(), name='zoho-task'),
 ]
