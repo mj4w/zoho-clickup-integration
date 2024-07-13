@@ -34,4 +34,13 @@ class OrganizationZoho(models.Model):
     
 class TaskZoho(models.Model):
     pass
+
+# Clickup
+
+class AccessTokenClickup(models.Model):
+    user = models.OneToOneField(User, related_name="clickup_token", on_delete=models.CASCADE, blank=True)
+    access_token = models.CharField(_('access token'), max_length=255, blank=True, null=True) 
+    
+    def __str__(self):
+        return f"{self.user.username} + {self.access_token}"
      

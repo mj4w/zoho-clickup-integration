@@ -3,7 +3,7 @@ import os
 import requests
 from rest_framework.response import Response
 from rest_framework import status
-from .models import User, AccessTokenZoho
+from .models import *
 from django.shortcuts import redirect
 
 
@@ -58,4 +58,34 @@ def generating_tokens(request):
     except requests.exceptions.RequestException as e:
         return Response(f"Error: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+
+# clickup
+clickup_client_id = os.environ.get('CLICKUP_CLIENT_ID')
+clickup_client_secret = os.environ.get('CLICKUP_CLIENT_SECRET')
+clickup_redirect_uri = 'http://localhost:8000/api/clickup/'
+
+def get_authorization_url():
+    authorization_url = f"https://app.clickup.com/api?client_id={clickup_client_id}&redirect_uri={clickup_redirect_uri}"
+    return authorization_url
     
+def request_token(user,code):
+    url = "https://api.clickup.com/api/v2/oauth/token"
+    try:
+      response = requests.post(url, data={
+        "client_id": clickup_client_id,
+        "client_secret": clickup_client_secret,
+        "code": code,
+      })
+      data = response.json()
+      
+      if "access_token" in data:
+        try:
+            clickup_token, created = AccessTokenClickup.objects.get_or_create(user=user)
+            clickup_token.access_token = data['access_token']
+            clickup_token.save()
+        except AccessTokenClickup.DoesNotExist:
+            return {"error": "Model does not exist"}
+        return Response(data, status=status.HTTP_200_OK)
+    except requests.exceptions.RequestException as e:
+        return Response(f"Error: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        

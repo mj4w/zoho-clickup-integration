@@ -22,7 +22,8 @@ class SampleAPIView(APIView):
     def get(self, request):
         # print(request.user.username)
         return Response({
-            'authorize-zoho': reverse('authorize', request=request)
+            'authorize-zoho': reverse('authorize', request=request),
+            'authorize-clickup': reverse('clickup-authorization', request=request)
         })
     
 
@@ -78,9 +79,9 @@ class ZohoOrganization(APIView):
             
         response_data, status_code = get_organization_data(zoho_token)
         # logger.debug(f"Organization API Response: {response_data}")
-        organization_id = response_data['data'][0]['id']
         # saving organization
         try:
+            organization_id = response_data['data'][0]['id']
             organization, created = OrganizationZoho.objects.get_or_create(user=user)
             organization.organization_id = organization_id
             organization.save()
@@ -143,3 +144,28 @@ class ZohoTask(APIView):
         
         return Response(response_data, status=status_code)
         
+        
+# Clickup
+
+class ClickupAuthorization(APIView):
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self,request, *args, **kwargs):
+        if 'code' in request.GET:
+            return self.get_access_token(request) 
+        else:
+            return self.authorization_clickup(request)
+        
+        
+    def authorization_clickup(self,request):
+        authorization_url = get_authorization_url()
+        return redirect(authorization_url)
+    
+    def get_access_token(self,request):
+        user = request.user
+        code = request.GET.get('code')
+        
+        tokens = request_token(user,code)
+        return tokens
+    
