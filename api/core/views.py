@@ -62,7 +62,7 @@ class ZohoAuthorizationView(APIView):
         return generating_tokens(request)
     
     
-class ZohoOrganization(APIView):
+class ZohoPortal(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, *args, **kwargs):
@@ -77,11 +77,11 @@ class ZohoOrganization(APIView):
                 "error": "Access token does not exist"
             }, 500
             
-        response_data, status_code = get_organization_data(zoho_token)
+        response_data, status_code = get_zoho_portal(zoho_token)
         # logger.debug(f"Organization API Response: {response_data}")
         # saving organization
         try:
-            organization_id = response_data['data'][0]['id']
+            organization_id = response_data['portals'][0]['id']
             organization, created = OrganizationZoho.objects.get_or_create(user=user)
             organization.organization_id = organization_id
             organization.save()
@@ -92,26 +92,26 @@ class ZohoOrganization(APIView):
         return Response(response_data, status_code)
 
     
-    def patch(self, request, organization_id, format=None):
-        user = request.user
+    # def patch(self, request, organization_id, format=None):
+    #     user = request.user
         
-        try: 
-            zoho_token = AccessTokenZoho.objects.get(user=user).access_token
-        except AccessTokenZoho.DoesNotExist:
-            return Response({
-                "error": "Access token not found for the user."
-            }, status=status.HTTP_400_BAD_REQUEST)
+    #     try: 
+    #         zoho_token = AccessTokenZoho.objects.get(user=user).access_token
+    #     except AccessTokenZoho.DoesNotExist:
+    #         return Response({
+    #             "error": "Access token not found for the user."
+    #         }, status=status.HTTP_400_BAD_REQUEST)
             
-        data = request.data
-        print(data)
+    #     data = request.data
+    #     print(data)
         
-        response_data, status_code = patch_organization_data(zoho_token, organization_id, data)
-        if isinstance(response_data, Response):
-            return response_data
-        return Response(response_data, status=status_code)
+    #     response_data, status_code = patch_organization_data(zoho_token, organization_id, data)
+    #     if isinstance(response_data, Response):
+    #         return response_data
+    #     return Response(response_data, status=status_code)
     
 
-class ZohoTask(APIView):
+class ZohoProjects(APIView):
     
     permission_classes = [IsAuthenticated]
     

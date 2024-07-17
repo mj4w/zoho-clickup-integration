@@ -12,14 +12,15 @@ redirect_uri = "http://localhost:8000/api/authorize/"
 client_id = os.environ.get('ZOHO_CLIENT_ID')
 client_secret = os.environ.get('ZOHO_CLIENT_SECRET')
 url_zoho = os.environ.get('ZOHO_URL')
-scope = "Desk.tickets.ALL,Desk.tickets.READ,Desk.tickets.WRITE,Desk.tickets.UPDATE,Desk.tickets.CREATE,Desk.tickets.DELETE,Desk.contacts.READ,Desk.contacts.WRITE,Desk.contacts.UPDATE,Desk.contacts.CREATE,Desk.tasks.ALL,Desk.tasks.WRITE,Desk.tasks.READ,Desk.tasks.CREATE,Desk.tasks.UPDATE,Desk.tasks.DELETE,Desk.basic.READ,Desk.basic.CREATE,Desk.settings.ALL,Desk.settings.WRITE,Desk.settings.READ,Desk.settings.CREATE,Desk.settings.UPDATE,Desk.settings.DELETE,Desk.search.READ,Desk.events.ALL,Desk.events.READ,Desk.events.WRITE,Desk.events.CREATE,Desk.events.UPDATE,Desk.events.DELETE,Desk.articles.READ,Desk.articles.CREATE,Desk.articles.UPDATE,Desk.articles.DELETE"
+scope = "ZohoProjects.tasks.READ,ZohoProjects.projects.ALL,ZohoProjects.projects.READ,ZohoBugTracker.portals.READ,ZohoProjects.portals.READ"
 
 grant_type = "authorization_code"
 access_type = "online"
 
 
 def get_clean_authorization_url():
-    authorization_url = f"{url_zoho}/oauth/v2/auth?response_type=code&client_id={client_id}&scope={scope}&access_type={access_type}&redirect_uri={redirect_uri}&state=5466400890088961855"
+    
+    authorization_url = f"{url_zoho}/oauth/v2/auth?scope={scope}&client_id={client_id}&response_type=code&access_type={access_type}&redirect_uri={redirect_uri}&prompt=consent"
     
     return authorization_url
 

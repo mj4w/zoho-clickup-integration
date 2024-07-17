@@ -6,8 +6,8 @@ from rest_framework.renderers import JSONRenderer
 
 
 
-def get_organization_data(zoho_token):
-    url = "https://desk.zoho.com/api/v1/organizations"
+def get_zoho_portal(zoho_token):
+    url = "https://projectsapi.zoho.com/restapi/portals/"
     headers = {
         "Authorization": f"Zoho-oauthtoken {zoho_token}",
     }
@@ -16,7 +16,7 @@ def get_organization_data(zoho_token):
         response.raise_for_status()
         return response.json(), response.status_code
     except requests.exceptions.HTTPError as e:
-        return {"error": str(e)}, 500 
+        return {"error": str(e), "response": response.text}, 500 
 
 def patch_organization_data(zoho_token,organization_id,data):
     # breakpoint()
