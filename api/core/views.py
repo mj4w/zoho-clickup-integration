@@ -12,6 +12,7 @@ import requests
 from rest_framework import authentication, permissions
 from .portal_zoho.views import *
 from .project_zoho.views import *
+import re
 # import logging
 
 # logger = logging.getLogger(__name__)
@@ -64,8 +65,17 @@ class ZohoAuthorizationView(APIView):
     
 class ZohoPortal(APIView):
     permission_classes = [IsAuthenticated]
-    
-    def get(self, request, *args, **kwargs):
+    def get(self,request, *args, **kwargs):
+        path = request.path
+        match = re.search(r'\d+', path)
+
+        if match:
+            return self.list_portal(request)
+        else:
+            return self.list_portal(request)
+        
+        
+    def list_portal(self,request):
         user = request.user
         
         try:
@@ -112,21 +122,46 @@ class ZohoPortal(APIView):
     
 
 class ZohoProjects(APIView):
-    
-    permission_classes = [IsAuthenticated]
-    
+    def post(self, request, *args, **kwargs):
+        path = request.path
+        search = re.search('projectgroups', path)
+        
+        if search:
+            return self.post_project_group(request)
+        else:
+            return self.post_project(request)
+
     def get(self, request, *args, **kwargs):
+        user = request.user
+        
+        try:
+            zoho_token = AccessTokenZoho.objects.get(user=user).access_token
+            organization_id = OrganizationZoho.objects.get(user=user).organization_id
+        except (AccessTokenZoho.DoesNotExist, OrganizationZoho.DoesNotExist):
+            return Response({"error": "Zoho token or Organization ID does not exist"}, status=500)
+        
+        response_data, status_code = list_project_data(zoho_token, organization_id)
+        return Response(response_data, status=status_code)
+        
+    def post_project_group(self, request):
+        # breakpoint()
         user = request.user
         try:
             zoho_token = AccessTokenZoho.objects.get(user=user).access_token
             organization_id = OrganizationZoho.objects.get(user=user).organization_id
-        except (AccessTokenZoho.DoesNotExist,OrganizationZoho.DoesNotExist):
-            return Response({"error": "Zoho token or Organization ID does not exist"}, status=500)
+        except (AccessTokenZoho.DoesNotExist, OrganizationZoho.DoesNotExist):
+            return Response({"error": "Zoho Token or Organization ID does not exist"}, status=500)
         
-        response_data, status_code = list_project_data(zoho_token,organization_id)
+        data = request.data
+        
+        print(organization_id)
+        print(zoho_token)
+        print(data)
+        response_data, status_code = project_group(zoho_token, organization_id, data)
+        if isinstance(response_data, Response):
+            return response_data
         return Response(response_data, status=status_code)
-        
-    
+
     # def post(self,request, *args, **kwargs):
     #     # breakpoint()
     #     user = request.user

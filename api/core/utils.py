@@ -12,7 +12,7 @@ redirect_uri = "http://localhost:8000/api/authorize/"
 client_id = os.environ.get('ZOHO_CLIENT_ID')
 client_secret = os.environ.get('ZOHO_CLIENT_SECRET')
 url_zoho = os.environ.get('ZOHO_URL')
-scope = "ZohoProjects.tasks.READ,ZohoProjects.projects.ALL,ZohoProjects.projects.READ,ZohoBugTracker.portals.READ,ZohoProjects.portals.READ"
+scope = "ZohoProjects.portals.ALL,ZohoProjects.projects.ALL,ZohoProjects.activities.ALL,ZohoProjects.feeds.ALL,ZohoProjects.status.ALL,ZohoProjects.milestones.ALL,ZohoProjects.tasklists.ALL,ZohoProjects.tasks.ALL,ZohoProjects.timesheets.ALL,ZohoProjects.bugs.ALL,ZohoProjects.events.ALL,ZohoProjects.forums.ALL,ZohoProjects.clients.ALL,ZohoProjects.users.ALL,ZohoProjects.documents.READ,ZohoProjects.search.READ,ZohoProjects.tags.ALL,ZohoProjects.calendar.ALL,ZohoProjects.integrations.ALL,ZohoProjects.projectgroups.ALL,ZohoProjects.entity_properties.ALL,ZohoPC.files.ALL,WorkDrive.workspace.ALL,WorkDrive.files.ALL,WorkDrive.team.ALL,ZohoProjects.projects.CREATE"
 
 grant_type = "authorization_code"
 access_type = "online"
